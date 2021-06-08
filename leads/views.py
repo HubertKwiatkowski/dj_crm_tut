@@ -1,6 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import Lead
+from .models import Lead, Agent
 from .forms import LeadForm
 
 
@@ -19,8 +19,24 @@ def lead_detail(request, pk):
     }
     return render(request, "leads/lead_detail.html", context)
 
+
 def lead_create(request):
+    form = LeadForm()
+    if request.method == "POST":
+        form = LeadForm(request.POST)
+        if form.is_valid():
+            first_name = form.cleaned_data['first_name']    # takes cleaned data as value
+            last_name = form.cleaned_data['last_name']
+            age = form.cleaned_data['age']
+            agent = Agent.objects.first()                   # takes first agent as value
+            Lead.objects.create(
+                first_name=first_name,                      # takes values from above to
+                last_name=last_name,                        # create a new lead and add
+                age=age,                                    # it to the database
+                agent=agent
+            )
+            return redirect("/leads")
     context = {
-        "form": LeadForm()
+        "form": form
     }
     return render(request, "leads/lead_create.html", context)
